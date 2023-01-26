@@ -27,6 +27,16 @@ bool stack_is_empty(stack_t* stack) {
     return stack->top == 0;
 }
 
+void* stack_get_nth_from_top(stack_t* stack, size_t offset) {
+    $_ASSERT(stack->top >= offset, "Offset greater than top");
+    return stack->bytes + stack->top - offset - 1;
+}
+
+void* stack_get(stack_t* stack, size_t index) {
+    $_ASSERT(index < stack->top, "Index out of bounds");
+    return (stack->bytes + index);
+}
+
 void stack_push_byte(stack_t* stack, byte_t byte) {
     _stack_realloc(stack, sizeof(byte_t));
     _push_byte(stack, byte);
@@ -51,10 +61,6 @@ void stack_push_byte_array(stack_t* stack, byte_t bytes[], size_t size) {
     }
 }
 
-void _assert_no_underflow(size_t top, size_t requiredSize) {
-    //$_ASSERT(top >= requiredSize, "Stack Underflow Error");
-}
-
 void _shrink_capacity(stack_t* stack) {
     if(stack->top < stack->capacity / 2 && stack->top > 16) {
         stack->bytes = realloc(stack->bytes, stack->top);
@@ -62,22 +68,48 @@ void _shrink_capacity(stack_t* stack) {
 }
 
 byte_t stack_pop_byte(stack_t* stack) {
-    _assert_no_underflow(stack->top, sizeof(byte_t));
     byte_t top = stack->bytes[--stack->top];
     _shrink_capacity(stack);
     return top;
 }
 
 word_t stack_pop_word(stack_t* stack) {
-    _assert_no_underflow(stack->top, sizeof(word_t));
     word_t top = *((word_t*) (stack->bytes + (stack->top -= sizeof(word_t))));
     _shrink_capacity(stack);
     return top;
 }
 
 dword_t stack_pop_dword(stack_t* stack) {
-    _assert_no_underflow(stack->top, sizeof(dword_t));
     dword_t top = *((dword_t*) (stack->bytes + (stack->top -= sizeof(dword_t))));
     _shrink_capacity(stack);
     return top;
 }
+
+void stack_pop_n(stack_t* stack, size_t n) {
+    stack->top -= n * sizeof(byte_t);
+    _shrink_capacity(stack);
+}
+
+byte_t stack_top_byte(stack_t* stack) {
+    return stack->bytes[stack->top - sizeof(byte_t)];
+}
+
+word_t stack_top_word(stack_t* stack) {
+    return *((word_t*) (stack->bytes + stack->top - sizeof(word_t)));
+}
+
+dword_t stack_top_dword(stack_t* stack) {
+    return *((dword_t*) (stack->bytes + stack->top - sizeof(dword_t)));
+}
+
+size_t stack_size(stack_t* stack) {
+    return stack->top;
+}
+
+void stack_reserve(stack_t* stack, size_t n) {
+    if(stack->top + n > stack_size(stack)) {
+        stack->bytes = realloc(stack->bytes, stack->top + n);
+    }
+    stack->top += n;
+}
+

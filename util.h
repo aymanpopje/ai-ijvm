@@ -6,23 +6,24 @@
 #include <stdio.h>
 
 typedef uint8_t byte_t;
-typedef uint32_t word_t;
-typedef uint64_t dword_t;
+typedef uint16_t word_t;
+typedef uint32_t dword_t;
 
 typedef int8_t ibyte_t;
-typedef int32_t iword_t;
-typedef int64_t idword_t;
+typedef int16_t iword_t;
+typedef int32_t idword_t;
 
-typedef word_t label_name_t;
+typedef iword_t label_name_t;
 typedef byte_t var_name_t;
-typedef word_t method_name_t;
-typedef word_t constant_name_t;
+typedef iword_t method_name_t;
+typedef iword_t constant_name_t;
+typedef byte_t var_t;
 typedef dword_t constant_t;
 
 #define $_STRINGIFY_DIRECT(...) #__VA_ARGS__
 #define $_STRINGIFY(...) $_STRINGIFY_DIRECT(__VA_ARGS__)
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 #define $_DEBUG(fmt, ...) printf(fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define $_DEBUG(...)
@@ -35,6 +36,8 @@ typedef dword_t constant_t;
 
 #define $_ASSERT(condition, message) assert((condition) && message)
 
-uint32_t swapEndianness(uint32_t num);
+word_t swap_endianness_word(word_t num);
+
+dword_t swap_endianness_dword(dword_t num);
 
 #endif
